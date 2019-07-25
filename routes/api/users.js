@@ -112,7 +112,8 @@ router.post('/profile', (req, res, next)=>{
                             id: user._id,
                             full_name : user.full_name,
                             role: user.role,
-                            created_at: user.created_at
+                            created_at: user.created_at,
+                            password: user.password
                 }
             })}).catch(err =>{console.log(err); return res.status(400).json({errors: "Server Error !"})})
         }

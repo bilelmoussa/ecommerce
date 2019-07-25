@@ -17,7 +17,7 @@ const  isEmpty = (data) => {
 	var count = 0;
 	for(var i in data)
 	{
-	  if(data.hasOwnProperty(i))
+	  if(Object.prototype.hasOwnProperty.call(data, i))
 	  {
 		count ++;
 	  }
