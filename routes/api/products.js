@@ -135,15 +135,21 @@ router.post("/AddProduct", (req, res, next)=>{
 
 
 router.get('/getProduct', (req, res, next)=>{
-
     let query = {};
     let limit = parseInt(req.query.limit) || 24;
     let skip = parseInt(req.query.skip) || null;
     let sort = req.query.sort || -1;
 
-
     if(!empty(req.query.ProductSize)){
-        query.ProductSize = req.query.ProductSize;
+        if(req.query.ProductSize.length > 1){
+            let size_or = [];
+            req.query.ProductSize.forEach((q)=>{
+                size_or.push({ProductSize: q})
+            })
+            query.$or = size_or;
+        }else{
+            query.ProductSize = req.query.ProductSize[0];
+        }
     }
 
     if(!empty(req.query.ProductCategories)){
@@ -155,7 +161,15 @@ router.get('/getProduct', (req, res, next)=>{
     }
 
     if(!empty(req.query.ProductColors)){
-        query.ProductColors = req.query.ProductColors;
+        if(req.query.ProductColors.length > 1){
+            let color_or = [];
+            req.query.ProductColors.forEach((q)=>{
+                color_or.push({ProductColors: q})
+            })
+            query.$or = color_or;
+        }else{
+            query.ProductColors = req.query.ProductColors[0];
+        }
     }
 
     if(!empty(req.query.gtePrice) && empty(req.query.ltePrice)){
@@ -174,7 +188,8 @@ router.get('/getProduct', (req, res, next)=>{
         query._id = req.query.id
     }
 
-    
+    console.log(query);
+
     Product.find(query).limit(limit).sort({created_at: sort}).skip(skip)
     .then((data)=>{
         let count = 0;
@@ -182,7 +197,19 @@ router.get('/getProduct', (req, res, next)=>{
             return res.status(404).json({success: false, Error: "No Product Found !"})
         }
             data.map((d)=>{
-                d.ProductFrontImage.url = `http://localhost:5000/image/${d.ProductFrontImage.filename}`
+                const Ptime = new Date(d.created_at).getTime();
+                const TimeNow =  Date.now();
+                const ExpTime = TimeNow - Ptime;
+                const twoWeek = 1.21e+9;
+
+                if(ExpTime < twoWeek){
+                    d.NewProduct = true;
+                }else{
+                    d.NewProduct = false;
+                }
+
+                d.ProductFrontImage.url = `http://localhost:5000/image/${d.ProductFrontImage.filename}`;
+
                 if(d.ProductLeftSideImage){
                     d.ProductLeftSideImage.url = `http://localhost:5000/image/${d.ProductLeftSideImage.filename}`
                 }
@@ -191,12 +218,10 @@ router.get('/getProduct', (req, res, next)=>{
                 }
                 count ++;
             })
-
            return res.status(200).json({success: true, data: data, count: count})
-        
-
     })
     .catch(err =>{
+        console.log(err);
         return res.status(400).json({status: false, errror: "Server error !"})
     })
 })
@@ -257,7 +282,6 @@ router.get("/sizes", (req, res, next)=>{
                     countSize = 0;
                 })
                 
-
                 return res.status(200).json({success: true, size: sizes})
             })    
             .catch(err=>{

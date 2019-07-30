@@ -12,11 +12,12 @@ let options = Joi.object({
     ProductQuantity: Joi.number().required(),
     ProductColors: Joi.array().required(),
     ProductSize: Joi.array().required(),
-    ProductCategories: Joi.string().lowercase().valid('women', 'kids').required(),
+    ProductCategories: Joi.string().lowercase().valid('men','women', 'kids').required(),
     ProductChildCategories: Joi.string().lowercase().valid('clothing', 'shoes', 'accessories').required(),
     ProductFrontImage: Joi.object().required(),
     ProductLeftSideImage: Joi.object(),
     ProductRightSideImage: Joi.object(),
+    NewProduct : Joi.boolean(),
     created_at: Joi.date().default(Date.now()).required(),
     update_at: Joi.date().default(Date.now()).required()
 });
