@@ -188,13 +188,11 @@ router.get('/getProduct', (req, res, next)=>{
         query._id = req.query.id
     }
 
-    console.log(query);
-
     Product.find(query).limit(limit).sort({created_at: sort}).skip(skip)
     .then((data)=>{
         let count = 0;
         if(!data || data.length === 0){
-            return res.status(404).json({success: false, Error: "No Product Found !"})
+            return res.status(200).json({success: false, Error: "No Product Found !", data: data, count: 0});
         }
             data.map((d)=>{
                 const Ptime = new Date(d.created_at).getTime();
@@ -238,7 +236,15 @@ router.get("/sizes", (req, res, next)=>{
     }
 
     if(!empty(req.query.ProductColors)){
-        query.ProductColors = req.query.ProductColors;
+        if(req.query.ProductColors.length > 1){
+            let color_or = [];
+            req.query.ProductColors.forEach((q)=>{
+                color_or.push({ProductColors: q})
+            })
+            query.$or = color_or;
+        }else{
+            query.ProductColors = req.query.ProductColors[0];
+        }
     }
 
     if(!empty(req.query.gtePrice) && empty(req.query.ltePrice)){
@@ -256,7 +262,7 @@ router.get("/sizes", (req, res, next)=>{
     Product.find(query)
             .then(data=>{
                 if(!data || data.length === 0){
-                    return res.status(404).json({success: false, Error: "No Product Found !"})
+                    return res.status(200).json({success: false, data: data, Error: "No Product Found !"})
                 }
                 let sizes = [];
 
@@ -302,7 +308,15 @@ router.get("/colors", (req, res, next)=>{
     }
     
     if(!empty(req.query.ProductSize)){
-        query.ProductSize = req.query.ProductSize;
+        if(req.query.ProductSize.length > 1){
+            let size_or = [];
+            req.query.ProductSize.forEach((q)=>{
+                size_or.push({ProductSize: q})
+            })
+            query.$or = size_or;
+        }else{
+            query.ProductSize = req.query.ProductSize[0];
+        }
     }
 
     if(!empty(req.query.gtePrice) && empty(req.query.ltePrice)){
@@ -320,7 +334,7 @@ router.get("/colors", (req, res, next)=>{
     Product.find(query)
             .then(data=>{
                 if(!data || data.length === 0){
-                    return res.status(404).json({success: false, Error: "No Product Found !"})
+                    return res.status(200).json({success: false, data: data, Error: "No Product Found !"})
                 }
                 let colors = [];
 
